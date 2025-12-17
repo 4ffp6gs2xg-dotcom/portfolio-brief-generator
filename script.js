@@ -25,6 +25,11 @@ const briefTitle = document.getElementById('briefTitle');
 const briefDate = document.getElementById('briefDate');
 const fieldSelector = document.getElementById('fieldSelector');
 const categorySelector = document.getElementById('categorySelector');
+const companyToggleBtn = document.getElementById('companyToggleBtn');
+const companySelector = document.getElementById('companySelector');
+const companyList = document.getElementById('companyList');
+const selectAllCompaniesBtn = document.getElementById('selectAllCompaniesBtn');
+const deselectAllCompaniesBtn = document.getElementById('deselectAllCompaniesBtn');
 const logoUpload = document.getElementById('logoUpload');
 const uploadLogoBtn = document.getElementById('uploadLogoBtn');
 const logoFileName = document.getElementById('logoFileName');
@@ -47,6 +52,9 @@ function init() {
     browseBtn.addEventListener('click', () => csvFileInput.click());
     csvFileInput.addEventListener('change', handleFileSelect);
     removeFileBtn.addEventListener('click', resetApp);
+    companyToggleBtn.addEventListener('click', toggleCompanySelector);
+    selectAllCompaniesBtn.addEventListener('click', selectAllCompanies);
+    deselectAllCompaniesBtn.addEventListener('click', deselectAllCompanies);
     uploadLogoBtn.addEventListener('click', () => logoUpload.click());
     logoUpload.addEventListener('change', handleLogoUpload);
     removeLogoBtn.addEventListener('click', removeLogo);
@@ -148,6 +156,7 @@ function processFile(file) {
             displayPreview();
             displayFieldSelector();
             displayCategorySelector();
+            displayCompanySelector();
             
             previewSection.classList.remove('hidden');
             configSection.classList.remove('hidden');
@@ -259,6 +268,58 @@ function displayCategorySelector() {
     });
 }
 
+function displayCompanySelector() {
+    companyList.innerHTML = '';
+    
+    if (csvData.length === 0) {
+        return;
+    }
+    
+    // Get the first field as the company name field
+    const nameField = csvHeaders[0];
+    
+    // Create checkbox for each company
+    csvData.forEach((company, index) => {
+        const companyName = company[nameField] || `Company ${index + 1}`;
+        
+        const div = document.createElement('div');
+        div.className = 'field-checkbox';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `company_${index}`;
+        checkbox.value = index;
+        checkbox.checked = true; // All companies selected by default
+        checkbox.classList.add('company-checkbox');
+        
+        const label = document.createElement('label');
+        label.htmlFor = `company_${index}`;
+        label.textContent = companyName;
+        
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        companyList.appendChild(div);
+    });
+}
+
+// ===========================
+// Company Selector Controls
+// ===========================
+function toggleCompanySelector() {
+    companySelector.classList.toggle('hidden');
+    companyToggleBtn.classList.toggle('expanded');
+}
+
+function selectAllCompanies() {
+    const checkboxes = companyList.querySelectorAll('.company-checkbox');
+    checkboxes.forEach(cb => cb.checked = true);
+}
+
+function deselectAllCompanies() {
+    const checkboxes = companyList.querySelectorAll('.company-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+}
+
 // ===========================
 // PDF Generation
 // ===========================
@@ -279,6 +340,10 @@ function generatePDF() {
     const selectedCategories = Array.from(categorySelector.querySelectorAll('input[type="checkbox"]:checked'))
         .map(cb => cb.value);
     
+    // Get selected company indices
+    const selectedCompanyIndices = Array.from(companyList.querySelectorAll('.company-checkbox:checked'))
+        .map(cb => parseInt(cb.value));
+    
     const title = briefTitle.value || 'Portfolio Company Brief';
     const monthValue = briefDate.value; // Format: YYYY-MM
     
@@ -293,10 +358,16 @@ function generatePDF() {
         formattedDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
     }
     
-    // Filter companies by selected categories
+    // Filter companies by selected companies (if specific companies are selected)
     let filteredData = csvData;
+    if (selectedCompanyIndices.length > 0 && selectedCompanyIndices.length < csvData.length) {
+        // Only filter if not all companies are selected
+        filteredData = csvData.filter((company, index) => selectedCompanyIndices.includes(index));
+    }
+    
+    // Further filter by selected categories
     if (csvHeaders.includes('Category') && selectedCategories.length > 0) {
-        filteredData = csvData.filter(company => selectedCategories.includes(company.Category));
+        filteredData = filteredData.filter(company => selectedCategories.includes(company.Category));
     }
     
     // Group companies by category and sort alphabetically within each category
@@ -376,39 +447,39 @@ function generatePDF() {
             doc.setFontSize(16);
             doc.setTextColor(79, 70, 229);
             doc.text(category, margin, yPosition);
-            yPosition += 10;
+    yPosition += 10;
         }
-        
+    
         // Process each company in the category
         companies.forEach((company, index) => {
-            // Check if we need a new page
-            if (yPosition > pageHeight - 60) {
-                doc.addPage();
-                yPosition = margin;
+        // Check if we need a new page
+        if (yPosition > pageHeight - 60) {
+            doc.addPage();
+            yPosition = margin;
                 isFirstPage = false;
-            }
-            
+        }
+        
             // Company name (bold, black)
-            doc.setFontSize(14);
+        doc.setFontSize(14);
             doc.setTextColor(0, 0, 0); // Black
             doc.setFont(undefined, 'bold');
             doc.text(`${company[selectedFields[0]] || 'Company'}`, margin, yPosition);
-            yPosition += 8;
-            
-            // Company details
-            doc.setFontSize(10);
-            doc.setTextColor(31, 41, 55);
+        yPosition += 8;
+        
+        // Company details
+        doc.setFontSize(10);
+        doc.setTextColor(31, 41, 55);
             doc.setFont(undefined, 'normal');
+        
+        selectedFields.forEach((field, fieldIndex) => {
+            if (fieldIndex === 0) return; // Skip first field (used as title)
             
-            selectedFields.forEach((field, fieldIndex) => {
-                if (fieldIndex === 0) return; // Skip first field (used as title)
-                
-                const value = company[field] || 'N/A';
-                
-                // Check if we need a new page
-                if (yPosition > pageHeight - 40) {
-                    doc.addPage();
-                    yPosition = margin;
+            const value = company[field] || 'N/A';
+            
+            // Check if we need a new page
+            if (yPosition > pageHeight - 40) {
+                doc.addPage();
+                yPosition = margin;
                     isFirstPage = false;
                 }
                 
@@ -433,15 +504,15 @@ function generatePDF() {
                     // Regular text field - just show the value without label
                     const textLines = doc.splitTextToSize(String(value), pageWidth - margin * 2 - 10);
                     doc.text(textLines, margin + 5, yPosition);
-                    yPosition += (textLines.length * 5) + 2;
+            yPosition += (textLines.length * 5) + 2;
                 }
-            });
-            
-            // Divider between companies
-            yPosition += 3;
-            doc.setDrawColor(229, 231, 235);
-            doc.line(margin, yPosition, pageWidth - margin, yPosition);
-            yPosition += 10;
+        });
+        
+        // Divider between companies
+        yPosition += 3;
+        doc.setDrawColor(229, 231, 235);
+        doc.line(margin, yPosition, pageWidth - margin, yPosition);
+        yPosition += 10;
         });
         
         // Add extra space between categories
@@ -490,6 +561,9 @@ function resetApp() {
     tableBody.innerHTML = '';
     fieldSelector.innerHTML = '';
     categorySelector.innerHTML = '';
+    companyList.innerHTML = '';
+    companySelector.classList.add('hidden');
+    companyToggleBtn.classList.remove('expanded');
     
     briefTitle.value = 'Portfolio Company Brief';
     const now = new Date();

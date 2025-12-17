@@ -341,6 +341,59 @@ tbody tr:last-child td {
     margin: 0;
 }
 
+/* Company Selector - Expandable Section */
+.expand-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.expand-toggle .toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.expand-toggle.expanded .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.company-selector {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-light);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    max-height: 400px;
+    overflow-y: auto;
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 400px;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+}
+
+.company-selector-header {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
 /* ===========================
    Utility Classes
    =========================== */
