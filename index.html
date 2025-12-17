@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Brief Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- External libraries for CSV parsing and PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Portfolio Brief Generator</h1>
+            <p class="subtitle">Upload a CSV of companies and generate a professional PDF brief</p>
+        </header>
+
+        <main>
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <svg class="upload-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <h3>Upload CSV File</h3>
+                    <p>Drag and drop your CSV file here, or click to browse</p>
+                    <input type="file" id="csvFileInput" accept=".csv" hidden>
+                    <button class="btn btn-primary" id="browseBtn">Browse Files</button>
+                </div>
+                <div class="file-info hidden" id="fileInfo">
+                    <span class="file-name" id="fileName"></span>
+                    <button class="btn btn-small" id="removeFileBtn">Remove</button>
+                </div>
+            </section>
+
+            <!-- Data Preview Section -->
+            <section class="preview-section hidden" id="previewSection">
+                <div class="section-header">
+                    <h2>Data Preview</h2>
+                    <span class="record-count" id="recordCount">0 companies loaded</span>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table id="dataTable">
+                        <thead id="tableHead"></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Configuration Section -->
+            <section class="config-section hidden" id="configSection">
+                <h2>PDF Configuration</h2>
+                
+                <div class="config-grid">
+                    <div class="config-item">
+                        <label for="briefTitle">Brief Title</label>
+                        <input type="text" id="briefTitle" value="Portfolio Company Brief" placeholder="Enter title">
+                    </div>
+                    
+                    <div class="config-item">
+                        <label for="briefDate">Month</label>
+                        <input type="month" id="briefDate">
+                    </div>
+                    
+                    <div class="config-item">
+                        <label for="logoUpload">Logo (optional)</label>
+                        <div class="logo-upload-container">
+                            <input type="file" id="logoUpload" accept="image/*" hidden>
+                            <button class="btn btn-small" id="uploadLogoBtn">Upload Logo</button>
+                            <span id="logoFileName" class="logo-filename"></span>
+                            <button class="btn btn-small hidden" id="removeLogoBtn">Remove</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-item">
+                    <label>Select Fields to Include in PDF</label>
+                    <div id="fieldSelector" class="field-selector"></div>
+                </div>
+
+                <div class="config-item">
+                    <label>Select Categories to Include in PDF</label>
+                    <div id="categorySelector" class="field-selector"></div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary btn-large" id="generatePdfBtn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Generate PDF
+                    </button>
+                    <button class="btn btn-secondary" id="resetBtn">Start Over</button>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Portfolio Brief Generator - Upload CSV, customize fields, and export professional PDFs</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
